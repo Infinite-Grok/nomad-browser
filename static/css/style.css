@@ -158,6 +158,96 @@ body {
   color: var(--text-primary);
 }
 
+/* Attachment preview bar */
+.attachment-preview {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  background: var(--bg-primary);
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.attachment-preview.hidden {
+  display: none;
+}
+
+.attachment-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: Consolas, "Courier New", monospace;
+}
+
+.attachment-name::before {
+  content: "\1F4CE ";
+}
+
+.attachment-remove {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0 4px;
+  line-height: 1;
+  transition: color 0.15s;
+}
+
+.attachment-remove:hover {
+  color: var(--text-primary);
+}
+
+/* Attach button */
+.btn-attach {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 6px 8px;
+  font-size: 14px;
+  line-height: 1;
+  transition: color 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+}
+
+.btn-attach:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* Attachment block in chat bubbles */
+.attachment-block {
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 6px 8px;
+  margin-bottom: 6px;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 11px;
+  line-height: 1.4;
+  max-height: 200px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--text-secondary);
+}
+
+.attachment-label {
+  font-size: 10px;
+  color: var(--accent);
+  margin-bottom: 4px;
+  font-family: inherit;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
 /* Input area */
 .chat-input-area {
   display: flex;
@@ -579,4 +669,164 @@ body {
   color: var(--text-muted);
   font-size: 12px;
   text-align: center;
+}
+
+/* ============================================================
+   Chat Panel Toolbar (Contacts button)
+   ============================================================ */
+
+.chat-toolbar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-secondary);
+  flex-shrink: 0;
+}
+
+.btn-contacts {
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 6px 12px;
+  color: var(--text-primary);
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.btn-contacts:hover {
+  background: var(--border);
+  border-color: var(--accent);
+}
+
+/* ============================================================
+   Contacts Drawer (left-side overlay)
+   ============================================================ */
+
+.contacts-drawer {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 320px;
+  z-index: 100;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  transform: translateX(0);
+  transition: transform 0.2s ease;
+}
+
+.contacts-drawer.hidden {
+  transform: translateX(-100%);
+}
+
+.contact-search {
+  flex: 1;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 6px;
+  color: var(--text-primary);
+  font-size: 12px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.contact-search::placeholder {
+  color: var(--text-muted);
+}
+
+.contact-search:focus {
+  border-color: var(--accent);
+}
+
+.contacts-list {
+  overflow-y: auto;
+  flex: 1;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.contacts-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.contacts-list::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 2px;
+}
+
+.contact-item {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.1s;
+  position: relative;
+}
+
+.contact-item:hover {
+  background: var(--bg-primary);
+}
+
+.contact-item .contact-name {
+  color: var(--text-primary);
+  font-size: 13px;
+  margin-bottom: 2px;
+}
+
+.contact-item .contact-address {
+  color: var(--text-muted);
+  font-size: 10px;
+  font-family: Consolas, "Courier New", monospace;
+}
+
+.remove-contact-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 18px;
+  padding: 4px;
+  line-height: 1;
+  transition: color 0.15s;
+}
+
+.remove-contact-btn:hover {
+  color: #f85149;
+}
+
+.drawer-footer {
+  padding: 12px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.btn-add-contact {
+  width: 100%;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 8px;
+  color: var(--text-primary);
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.btn-add-contact:hover {
+  background: var(--border);
+  border-color: var(--accent);
 }

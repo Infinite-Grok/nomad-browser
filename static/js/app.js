@@ -12,6 +12,7 @@ const NomadBrowser = {
         ChatPanel.init();
         PageBrowser.init();
         NodeDrawer.init();
+        ContactsDrawer.init();
 
         // 2. Set up global navigation handler (called by Micron links)
         window.nomadBrowser = {
@@ -101,6 +102,11 @@ const NomadBrowser = {
             if (e.ctrlKey && e.shiftKey && e.key === 'D') {
                 e.preventDefault();
                 NodeDrawer.toggle();
+            }
+            // Ctrl+Shift+O — toggle contacts drawer
+            if (e.ctrlKey && e.shiftKey && e.key === 'O') {
+                e.preventDefault();
+                ContactsDrawer.toggle();
             }
             // Ctrl+T — new page tab
             if (e.ctrlKey && !e.shiftKey && e.key === 't') {

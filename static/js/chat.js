@@ -10,6 +10,7 @@ const ChatPanel = {
     pollInterval: null,
     waitingTimer: null,
     waitingStart: null,
+    pendingAttachment: null,  // {name, content} or null
 
     // Configurable AI address — override from app config if available
     aiAddress: window.NOMAD_AI_ADDRESS || '89b6a6633e51cb8b9de6b26bb139e45d',
@@ -50,6 +51,13 @@ const ChatPanel = {
                 this.sendMessage();
             }
         });
+
+        // File attachment
+        document.getElementById('btn-attach').addEventListener('click', () => {
+            document.getElementById('file-input').click();
+        });
+        document.getElementById('file-input').addEventListener('change', (e) => this._handleFileSelect(e));
+        document.getElementById('attachment-remove').addEventListener('click', () => this._clearAttachment());
 
         // Start polling for new messages every 2 seconds
         this.pollInterval = setInterval(() => this.pollMessages(), 2000);
@@ -198,9 +206,15 @@ const ChatPanel = {
 
     async sendMessage() {
         const input = document.getElementById('msg-input');
-        const content = input.value.trim();
-        if (!content || !this.activeAddress) return;
+        const text = input.value.trim();
+        const attachment = this.pendingAttachment;
+        if (!text && !attachment) return;
+        if (!this.activeAddress) return;
         input.value = '';
+
+        // Pack attachment into the message content
+        const content = this._buildMessageContent(text, attachment);
+        this._clearAttachment();
 
         // Display outgoing message immediately (optimistic)
         const outgoing = {
@@ -374,14 +388,32 @@ const ChatPanel = {
             senderEl.appendChild(ts);
         }
 
-        // Bubble content — sanitize if DOMPurify is available
+        // Bubble content — parse attachments, sanitize
         const bubbleEl = document.createElement('div');
         bubbleEl.className = 'bubble';
         const rawContent = msg.content || '';
-        if (window.DOMPurify) {
-            bubbleEl.innerHTML = DOMPurify.sanitize(rawContent, { ALLOWED_TAGS: [] });
-        } else {
-            bubbleEl.textContent = rawContent;
+        const parsed = this._parseAttachment(rawContent);
+
+        if (parsed.attachment) {
+            const labelEl = document.createElement('div');
+            labelEl.className = 'attachment-label';
+            labelEl.textContent = parsed.attachment.name;
+            bubbleEl.appendChild(labelEl);
+
+            const blockEl = document.createElement('div');
+            blockEl.className = 'attachment-block';
+            blockEl.textContent = parsed.attachment.content;
+            bubbleEl.appendChild(blockEl);
+        }
+
+        if (parsed.text) {
+            const textEl = document.createElement('div');
+            if (window.DOMPurify) {
+                textEl.innerHTML = DOMPurify.sanitize(parsed.text, { ALLOWED_TAGS: [] });
+            } else {
+                textEl.textContent = parsed.text;
+            }
+            bubbleEl.appendChild(textEl);
         }
 
         msgEl.appendChild(senderEl);
@@ -434,6 +466,72 @@ const ChatPanel = {
         }
         this.switchTab(address);
         document.getElementById('msg-input').focus();
+    },
+
+    // ----------------------------------------------------------------
+    // File attachments
+    // ----------------------------------------------------------------
+
+    _handleFileSelect(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Max 64KB — LXMF messages have size limits on the mesh
+        if (file.size > 65536) {
+            this._renderSystemMessage('File too large. Max 64 KB for mesh transport.');
+            this._scrollToBottom();
+            e.target.value = '';
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            this.pendingAttachment = { name: file.name, content: ev.target.result };
+            document.getElementById('attachment-name').textContent = file.name + ' (' + this._formatSize(file.size) + ')';
+            document.getElementById('attachment-preview').classList.remove('hidden');
+        };
+        reader.readAsText(file);
+        e.target.value = '';  // reset so same file can be re-selected
+    },
+
+    _clearAttachment() {
+        this.pendingAttachment = null;
+        document.getElementById('attachment-preview').classList.add('hidden');
+        document.getElementById('attachment-name').textContent = '';
+    },
+
+    _formatSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        return (bytes / 1024).toFixed(1) + ' KB';
+    },
+
+    _buildMessageContent(text, attachment) {
+        // Pack attachment inline with delimiters the AI and peers can parse
+        if (!attachment) return text;
+        let packed = '--- ATTACHED FILE: ' + attachment.name + ' ---\n';
+        packed += attachment.content;
+        packed += '\n--- END FILE ---';
+        if (text) packed += '\n\n' + text;
+        return packed;
+    },
+
+    _parseAttachment(content) {
+        // Extract attachment block if present
+        const startMarker = '--- ATTACHED FILE: ';
+        const endMarker = '\n--- END FILE ---';
+        if (!content.startsWith(startMarker)) return { text: content, attachment: null };
+
+        const nameEnd = content.indexOf(' ---\n', startMarker.length);
+        if (nameEnd < 0) return { text: content, attachment: null };
+
+        const fileName = content.substring(startMarker.length, nameEnd);
+        const fileStart = nameEnd + 5; // ' ---\n'.length
+        const fileEnd = content.indexOf(endMarker, fileStart);
+        if (fileEnd < 0) return { text: content, attachment: null };
+
+        const fileContent = content.substring(fileStart, fileEnd);
+        const remaining = content.substring(fileEnd + endMarker.length).replace(/^\n\n/, '');
+        return { text: remaining, attachment: { name: fileName, content: fileContent } };
     },
 
     // ----------------------------------------------------------------

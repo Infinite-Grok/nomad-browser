@@ -9,13 +9,22 @@
 <body>
   <!-- Chat Panel (left) -->
   <div id="chat-panel" class="panel-chat">
+    <div id="chat-toolbar" class="chat-toolbar">
+      <button id="btn-contacts" class="btn-contacts" title="Contacts">Contacts</button>
+    </div>
     <div id="chat-tabs" class="chat-tabs">
       <!-- JS will populate conversation tabs here -->
     </div>
     <div id="chat-messages" class="chat-messages">
       <!-- JS will populate messages here -->
     </div>
+    <div id="attachment-preview" class="attachment-preview hidden">
+      <span id="attachment-name" class="attachment-name"></span>
+      <button id="attachment-remove" class="attachment-remove" title="Remove attachment">&times;</button>
+    </div>
     <div id="chat-input-area" class="chat-input-area">
+      <input type="file" id="file-input" accept=".txt,.mu,.md,.log,.csv,.json" style="display:none">
+      <button id="btn-attach" class="btn-attach" title="Attach file (.txt, .mu, etc.)">&#128206;</button>
       <input type="text" id="msg-input" class="msg-input" placeholder="Ask the archivist..." autocomplete="off">
       <button id="msg-send" class="msg-send">Send</button>
     </div>
@@ -63,10 +72,26 @@
     </div>
   </div>
 
+  <!-- Contacts Drawer (left-side overlay, hidden by default) -->
+  <div id="contacts-drawer" class="contacts-drawer hidden">
+    <div class="drawer-header">
+      <span class="drawer-title">Contacts</span>
+      <input type="text" id="contact-search" class="contact-search" placeholder="Search contacts...">
+      <button id="contacts-drawer-close" class="drawer-close">&times;</button>
+    </div>
+    <div id="contacts-list" class="contacts-list">
+      <!-- JS will populate contacts here -->
+    </div>
+    <div class="drawer-footer">
+      <button id="btn-add-contact" class="btn-add-contact">+ Add Contact</button>
+    </div>
+  </div>
+
   <!-- Scripts (will be added in later tasks) -->
   <script src="/static/js/purify.min.js"></script>
   <script src="/static/js/micron.js"></script>
   <script src="/static/js/chat.js"></script>
+  <script src="/static/js/contacts.js"></script>
   <script src="/static/js/browser.js"></script>
   <script src="/static/js/drawer.js"></script>
   <script src="/static/js/app.js"></script>

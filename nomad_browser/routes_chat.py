@@ -1,6 +1,29 @@
 """Chat API routes for the LXMF messenger."""
 
+import json, os
 from flask import Blueprint, jsonify, request
+
+
+def _load_contacts(data_dir):
+    """Load contacts from settings.json."""
+    settings_path = os.path.join(data_dir, "settings.json")
+    if os.path.exists(settings_path):
+        with open(settings_path, 'r', encoding='utf-8') as f:
+            settings = json.load(f)
+        return settings.get("contacts", [])
+    return []
+
+
+def _save_contacts(data_dir, contacts):
+    """Save contacts to settings.json."""
+    settings_path = os.path.join(data_dir, "settings.json")
+    settings = {}
+    if os.path.exists(settings_path):
+        with open(settings_path, 'r', encoding='utf-8') as f:
+            settings = json.load(f)
+    settings["contacts"] = contacts
+    with open(settings_path, 'w', encoding='utf-8') as f:
+        json.dump(settings, f, indent=2)
 
 
 def register_chat_routes(app, messenger):
@@ -120,5 +143,64 @@ def register_chat_routes(app, messenger):
         Returns: {"address": "<lxmf_address>"}
         """
         return jsonify({"address": messenger.lxmf_address})
+
+    # ----------------------------------------------------------------
+    # Contacts
+    # ----------------------------------------------------------------
+
+    @chat_bp.route("/api/contacts", methods=["GET"])
+    def get_contacts():
+        """Return saved contacts list from settings."""
+        try:
+            contacts = _load_contacts(messenger.data_dir)
+            return jsonify(contacts)
+        except Exception as e:
+            return jsonify({"status": "error", "error": str(e)}), 500
+
+    @chat_bp.route("/api/contacts", methods=["POST"])
+    def save_contacts():
+        """Save full contacts list to settings."""
+        data = request.get_json(force=True, silent=True) or {}
+        contacts = data.get("contacts", [])
+        try:
+            _save_contacts(messenger.data_dir, contacts)
+            return jsonify({"status": "ok"})
+        except Exception as e:
+            return jsonify({"status": "error", "error": str(e)}), 500
+
+    @chat_bp.route("/api/contacts/add", methods=["POST"])
+    def add_contact():
+        """Add a single contact. Body: {address, name}"""
+        data = request.get_json(force=True, silent=True) or {}
+        address = data.get("address", "").strip()
+        name = data.get("name", "").strip()
+        if not address:
+            return jsonify({"status": "error", "error": "Missing address"}), 400
+        if not name:
+            name = address[:16] + "..."
+        try:
+            contacts = _load_contacts(messenger.data_dir)
+            # Don't duplicate
+            if not any(c["address"] == address for c in contacts):
+                contacts.append({"address": address, "name": name})
+                _save_contacts(messenger.data_dir, contacts)
+            return jsonify({"status": "ok"})
+        except Exception as e:
+            return jsonify({"status": "error", "error": str(e)}), 500
+
+    @chat_bp.route("/api/contacts/remove", methods=["POST"])
+    def remove_contact():
+        """Remove a contact by address. Body: {address}"""
+        data = request.get_json(force=True, silent=True) or {}
+        address = data.get("address", "").strip()
+        if not address:
+            return jsonify({"status": "error", "error": "Missing address"}), 400
+        try:
+            contacts = _load_contacts(messenger.data_dir)
+            contacts = [c for c in contacts if c["address"] != address]
+            _save_contacts(messenger.data_dir, contacts)
+            return jsonify({"status": "ok"})
+        except Exception as e:
+            return jsonify({"status": "error", "error": str(e)}), 500
 
     app.register_blueprint(chat_bp)

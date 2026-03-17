@@ -70,7 +70,7 @@ class Messenger:
     def _on_message(self, message):
         """Callback for incoming LXMF messages."""
         try:
-            sender = RNS.prettyhexrep(message.source_hash).replace("<","").replace(">","")
+            sender = RNS.prettyhexrep(message.source_hash).replace("<","").replace(">","").replace(" ","")
             content = message.content.decode('utf-8') if isinstance(message.content, bytes) else str(message.content)
             msg_data = {
                 "from": sender,
