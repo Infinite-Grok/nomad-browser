@@ -16,6 +16,9 @@ def create_app(data_dir=None):
     Returns:
         Configured Flask app instance.
     """
+    if data_dir is None:
+        data_dir = os.path.expanduser("~/.nomad-browser")
+
     # Paths relative to the nomad_browser package directory
     package_dir = os.path.dirname(os.path.abspath(__file__))
     static_folder = os.path.join(package_dir, "..", "static")
@@ -27,7 +30,7 @@ def create_app(data_dir=None):
         template_folder=os.path.normpath(template_folder),
     )
 
-    # Initialize RNS identity
+    # Initialize RNS identity (must run first so Reticulum is ready)
     id_manager.init(data_dir)
 
     # Initialize LXMF messenger (shares the same RNS identity)
@@ -36,7 +39,15 @@ def create_app(data_dir=None):
     messenger = Messenger(data_dir)
     register_chat_routes(app, messenger)
 
-    # Register routes
+    # Initialize page browser + cache
+    from .browser import Browser
+    from .cache import CacheManager
+    from .routes_pages import register_page_routes
+    browser = Browser(data_dir)
+    browser.cache = CacheManager(browser, data_dir)
+    register_page_routes(app, browser)
+
+    # Register base routes
     @app.route("/")
     def index():
         ident = id_manager.get_identity()
