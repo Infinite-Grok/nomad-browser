@@ -30,6 +30,12 @@ def create_app(data_dir=None):
     # Initialize RNS identity
     id_manager.init(data_dir)
 
+    # Initialize LXMF messenger (shares the same RNS identity)
+    from .messenger import Messenger
+    from .routes_chat import register_chat_routes
+    messenger = Messenger(data_dir)
+    register_chat_routes(app, messenger)
+
     # Register routes
     @app.route("/")
     def index():
