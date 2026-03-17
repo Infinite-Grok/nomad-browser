@@ -1,5 +1,74 @@
 <!DOCTYPE html>
-<html><head><meta charset="UTF-8"><title>Nomad Browser</title></head>
-<body style="background:#0d1117;color:#c9d1d9;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;">
-<h1>Nomad Browser</h1>
-</body></html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nomad Browser</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <!-- Chat Panel (left) -->
+  <div id="chat-panel" class="panel-chat">
+    <div id="chat-tabs" class="chat-tabs">
+      <!-- JS will populate conversation tabs here -->
+    </div>
+    <div id="chat-messages" class="chat-messages">
+      <!-- JS will populate messages here -->
+    </div>
+    <div id="chat-input-area" class="chat-input-area">
+      <input type="text" id="msg-input" class="msg-input" placeholder="Ask the archivist..." autocomplete="off">
+      <button id="msg-send" class="msg-send">Send</button>
+    </div>
+  </div>
+
+  <!-- Resize Handle -->
+  <div id="panel-resize" class="panel-resize"></div>
+
+  <!-- Browser Panel (right) -->
+  <div id="browser-panel" class="panel-browser">
+    <!-- Browser Toolbar -->
+    <div id="browser-toolbar" class="browser-toolbar">
+      <button id="nav-back" class="nav-btn" title="Back">&#9664;</button>
+      <button id="nav-fwd" class="nav-btn" title="Forward">&#9654;</button>
+      <button id="nav-reload" class="nav-btn" title="Reload">&#8635;</button>
+      <input type="text" id="address-bar" class="address-bar" placeholder="node_hash:/page/path.mu">
+      <button id="btn-collapse-chat" class="nav-btn" title="Toggle Chat (Ctrl+Shift+C)">&#9776;</button>
+      <button id="btn-drawer" class="nav-btn" title="Nodes (Ctrl+Shift+D)">Nodes</button>
+    </div>
+
+    <!-- Browser Tabs -->
+    <div id="browser-tabs" class="browser-tabs">
+      <!-- JS will populate page tabs here -->
+    </div>
+
+    <!-- Page Content -->
+    <div id="page-content" class="page-content">
+      <div class="welcome-message">
+        <h2>Nomad Browser</h2>
+        <p>The first unified client for the Reticulum mesh network.</p>
+        <p style="color: #8b949e;">Browse pages, chat with anyone, navigate with AI.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Node Drawer (overlay, hidden by default) -->
+  <div id="node-drawer" class="node-drawer hidden">
+    <div class="drawer-header">
+      <span class="drawer-title">Nodes</span>
+      <input type="text" id="node-search" class="node-search" placeholder="Search nodes...">
+      <button id="drawer-close" class="drawer-close">&times;</button>
+    </div>
+    <div id="node-list" class="node-list">
+      <!-- JS will populate nodes here -->
+    </div>
+  </div>
+
+  <!-- Scripts (will be added in later tasks) -->
+  <script src="/static/js/purify.min.js"></script>
+  <script src="/static/js/micron.js"></script>
+  <script src="/static/js/chat.js"></script>
+  <script src="/static/js/browser.js"></script>
+  <script src="/static/js/drawer.js"></script>
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

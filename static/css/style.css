@@ -1,0 +1,532 @@
+/* ============================================================
+   Nomad Browser — Dark Theme
+   Design tokens + layout for the two-panel SPA shell
+   ============================================================ */
+
+:root {
+  --bg-primary:      #0d1117;
+  --bg-secondary:    #161b22;
+  --bg-page:         #000000;
+  --border:          #30363d;
+  --text-primary:    #c9d1d9;
+  --text-secondary:  #8b949e;
+  --text-muted:      #484f58;
+  --accent:          #f0a040;
+  --link:            #58a6ff;
+  --chat-user-bg:    #1c2128;
+  --chat-ai-bg:      #1a1510;
+  --chat-ai-border:  #3d2e10;
+}
+
+/* ============================================================
+   Reset / Base
+   ============================================================ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+body {
+  display: flex;
+  flex-direction: row;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 13px;
+}
+
+/* ============================================================
+   Chat Panel (left)
+   ============================================================ */
+
+.panel-chat {
+  width: 35%;
+  min-width: 280px;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border);
+  overflow: hidden;
+}
+
+/* Tabs row */
+.chat-tabs {
+  display: flex;
+  flex-direction: row;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-secondary);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.chat-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.chat-tab {
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+  user-select: none;
+}
+
+.chat-tab:hover {
+  color: var(--text-secondary);
+}
+
+.chat-tab.active {
+  color: var(--accent);
+  border-bottom: 2px solid var(--accent);
+}
+
+/* Messages area */
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.chat-messages::-webkit-scrollbar {
+  width: 4px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 2px;
+}
+
+/* Individual message */
+.chat-message {
+  margin-bottom: 16px;
+}
+
+.chat-message .sender {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.chat-message .bubble {
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+/* Outgoing (user) */
+.chat-message.outgoing .bubble {
+  background: var(--chat-user-bg);
+  border-top-left-radius: 2px;
+  color: var(--text-primary);
+}
+
+/* Incoming (peer/generic) */
+.chat-message.incoming .bubble {
+  background: var(--bg-primary);
+  border-top-right-radius: 2px;
+  color: var(--text-secondary);
+}
+
+/* AI messages */
+.chat-message.ai .sender {
+  color: var(--accent);
+}
+
+.chat-message.ai .bubble {
+  background: var(--chat-ai-bg);
+  border: 1px solid var(--chat-ai-border);
+  color: var(--text-primary);
+}
+
+/* Input area */
+.chat-input-area {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  padding: 8px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-secondary);
+  flex-shrink: 0;
+}
+
+.msg-input {
+  flex: 1;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 12px;
+  color: var(--text-primary);
+  font-size: 12px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.msg-input::placeholder {
+  color: var(--text-muted);
+}
+
+.msg-input:focus {
+  border-color: var(--accent);
+}
+
+.msg-send {
+  background: var(--accent);
+  color: var(--bg-primary);
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-weight: bold;
+  font-size: 12px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  white-space: nowrap;
+}
+
+.msg-send:hover {
+  opacity: 0.85;
+}
+
+.msg-send:active {
+  opacity: 0.7;
+}
+
+/* ============================================================
+   Resize Handle
+   ============================================================ */
+
+.panel-resize {
+  width: 4px;
+  flex-shrink: 0;
+  cursor: col-resize;
+  background: transparent;
+  transition: background 0.15s;
+  z-index: 10;
+}
+
+.panel-resize:hover,
+.panel-resize.dragging {
+  background: var(--border);
+}
+
+/* ============================================================
+   Browser Panel (right)
+   ============================================================ */
+
+.panel-browser {
+  flex: 1;
+  min-width: 400px;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-primary);
+  overflow: hidden;
+}
+
+/* Toolbar */
+.browser-toolbar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-secondary);
+  flex-shrink: 0;
+}
+
+.nav-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 14px;
+  line-height: 1;
+  transition: color 0.15s, background 0.15s;
+}
+
+.nav-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-primary);
+}
+
+.nav-btn:active {
+  color: var(--accent);
+}
+
+.address-bar {
+  flex: 1;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 5px 10px;
+  color: var(--link);
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 11px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.address-bar::placeholder {
+  color: var(--text-muted);
+}
+
+.address-bar:focus {
+  border-color: var(--link);
+}
+
+/* Browser tabs */
+.browser-tabs {
+  display: flex;
+  flex-direction: row;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-secondary);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.browser-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.browser-tab {
+  padding: 6px 14px;
+  cursor: pointer;
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+  user-select: none;
+}
+
+.browser-tab:hover {
+  color: var(--text-secondary);
+}
+
+.browser-tab.active {
+  color: var(--text-primary);
+  border-bottom: 2px solid var(--link);
+}
+
+/* Page content */
+.page-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0;
+  background: var(--bg-page);
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-primary);
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.page-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.page-content::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 2px;
+}
+
+/* Preserve monospace layout for Micron pages */
+.page-content div {
+  white-space: pre;
+}
+
+/* ============================================================
+   Welcome Message
+   ============================================================ */
+
+.welcome-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  color: var(--text-secondary);
+  padding: 24px;
+}
+
+.welcome-message h2 {
+  color: var(--accent);
+  font-size: 22px;
+  margin: 0 0 12px 0;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.welcome-message p {
+  margin: 4px 0;
+  font-size: 13px;
+}
+
+/* ============================================================
+   Node Drawer (overlay)
+   ============================================================ */
+
+.node-drawer {
+  position: fixed;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 320px;
+  z-index: 100;
+  background: var(--bg-secondary);
+  border-left: 1px solid var(--border);
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  transform: translateX(0);
+  transition: transform 0.2s ease;
+}
+
+.node-drawer.hidden {
+  transform: translateX(100%);
+}
+
+.drawer-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.drawer-title {
+  font-weight: bold;
+  color: var(--text-primary);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.node-search {
+  flex: 1;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 6px;
+  color: var(--text-primary);
+  font-size: 12px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.node-search::placeholder {
+  color: var(--text-muted);
+}
+
+.node-search:focus {
+  border-color: var(--accent);
+}
+
+.drawer-close {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+  transition: color 0.15s;
+}
+
+.drawer-close:hover {
+  color: var(--text-primary);
+}
+
+.node-list {
+  overflow-y: auto;
+  flex: 1;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.node-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.node-list::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 2px;
+}
+
+.node-item {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.node-item:hover {
+  background: var(--bg-primary);
+}
+
+.node-item .node-name {
+  color: var(--text-primary);
+  font-size: 13px;
+  margin-bottom: 2px;
+}
+
+.node-item .node-hash {
+  color: var(--text-muted);
+  font-size: 10px;
+  font-family: Consolas, "Courier New", monospace;
+}
+
+/* ============================================================
+   Waiting / Loading Animation
+   ============================================================ */
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.3; }
+  50%       { opacity: 1; }
+}
+
+.waiting-indicator {
+  animation: pulse 2s infinite;
+}
+
+/* ============================================================
+   Collapsed chat state (toggled by JS)
+   ============================================================ */
+
+.panel-chat.collapsed {
+  width: 0;
+  min-width: 0;
+  overflow: hidden;
+  border-right: none;
+}
+
+.panel-chat.collapsed + .panel-resize {
+  display: none;
+}
