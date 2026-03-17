@@ -830,3 +830,68 @@ body {
   background: var(--border);
   border-color: var(--accent);
 }
+
+/* ============================================================
+   Contacts — Play Checkers Button
+   ============================================================ */
+
+.play-checkers-btn {
+  position: absolute;
+  right: 28px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px;
+  line-height: 1;
+  transition: transform 0.15s;
+}
+
+.play-checkers-btn:hover {
+  transform: translateY(-50%) scale(1.1);
+}
+
+/* ============================================================
+   Checkers Game Board in Chat Panel
+   ============================================================ */
+
+.checkers-game-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+}
+
+.checkers-status {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  padding: 8px 16px;
+  background: var(--bg-primary);
+  border-radius: 4px;
+  text-align: center;
+}
+
+.checkers-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.btn-resign {
+  background: var(--bg-primary);
+  border: 1px solid #f85149;
+  border-radius: 4px;
+  padding: 6px 12px;
+  color: #f85149;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-resign:hover {
+  background: rgba(248, 81, 73, 0.1);
+}

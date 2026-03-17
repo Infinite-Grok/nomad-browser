@@ -163,6 +163,19 @@ const ChatPanel = {
 
         this.activeAddress = address;
 
+        // Check if this is a game conversation
+        if (conv.isGame && typeof CheckersGame !== 'undefined') {
+            // Render game board instead of messages
+            const game = CheckersGame.games[address];
+            if (game) {
+                const container = document.getElementById('chat-messages');
+                container.innerHTML = '';
+                container.appendChild(game.statusEl);
+                container.appendChild(game.boardEl);
+            }
+            return;
+        }
+
         // Load messages from API
         await this.loadMessages(address);
     },
@@ -259,6 +272,15 @@ const ChatPanel = {
             for (const msg of messages) {
                 const addr = msg.address || msg.from;
                 if (!addr) continue;
+
+                // Check if this is a game message
+                if (msg.content && msg.content.startsWith('{"type":"game"')) {
+                    // Route to CheckersGame handler
+                    if (typeof CheckersGame !== 'undefined') {
+                        const handled = CheckersGame.handleGameMessage(msg);
+                        if (handled) continue;
+                    }
+                }
 
                 // Add tab if this is a new conversation
                 if (!this.conversations[addr]) {

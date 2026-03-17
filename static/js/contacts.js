@@ -103,12 +103,30 @@ const ContactsDrawer = {
         item.appendChild(addressEl);
 
         // Click to start chat
-        item.addEventListener('click', () => {
+        item.addEventListener('click', (e) => {
+            // Don't trigger if clicking action buttons
+            if (e.target.classList.contains('play-checkers-btn') || e.target.classList.contains('remove-contact-btn')) {
+                return;
+            }
             if (typeof ChatPanel !== 'undefined') {
                 ChatPanel.newConversation(contact.address, contact.name);
             }
             this.close();
         });
+
+        // Play Checkers button
+        const gameBtn = document.createElement('button');
+        gameBtn.className = 'play-checkers-btn';
+        gameBtn.textContent = '🎮';
+        gameBtn.title = 'Play Checkers';
+        gameBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.close();
+            if (typeof CheckersGame !== 'undefined') {
+                CheckersGame.newGame(contact.address, contact.name);
+            }
+        });
+        item.appendChild(gameBtn);
 
         // Remove button
         const removeBtn = document.createElement('button');
