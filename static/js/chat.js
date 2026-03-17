@@ -99,6 +99,10 @@ const ChatPanel = {
         tab.textContent = displayName;
 
         tab.addEventListener('click', () => this.switchTab(address));
+        tab.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            this.clearConversation(address);
+        });
 
         // Insert before the "+" tab
         const newTab = document.getElementById('chat-tab-new');
@@ -172,7 +176,12 @@ const ChatPanel = {
                 this.conversations[address].messages = messages;
             }
 
+            // Deduplicate messages (same content + timestamp = duplicate)
+            const seen = new Set();
             for (const msg of messages) {
+                const key = `${msg.from}:${msg.timestamp}:${msg.content}`;
+                if (seen.has(key)) continue;
+                seen.add(key);
                 this._renderMessage(msg);
             }
         } catch (e) {
@@ -399,6 +408,20 @@ const ChatPanel = {
         if (!trimmed) return;
         const name = window.prompt(`Name for ${trimmed} (optional):`);
         this.newConversation(trimmed, name ? name.trim() : null);
+    },
+
+    async clearConversation(address) {
+        if (!confirm('Clear this conversation?')) return;
+        try {
+            await fetch(`/api/chat/clear/${encodeURIComponent(address)}`, {method: 'DELETE'});
+        } catch (e) { /* ok */ }
+        // Clear local state
+        if (this.conversations[address]) {
+            this.conversations[address].messages = [];
+        }
+        if (address === this.activeAddress) {
+            document.getElementById('chat-messages').innerHTML = '';
+        }
     },
 
     // Public method — called externally (e.g. from drawer.js when clicking a node)

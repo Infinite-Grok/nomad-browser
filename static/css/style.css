@@ -354,9 +354,15 @@ body {
   border-radius: 2px;
 }
 
-/* Preserve monospace layout for Micron pages */
-.page-content div {
-  white-space: pre;
+/* Preserve monospace layout for Micron-rendered content */
+.mu-page div {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.tab-page-content {
+  overflow-y: auto;
+  height: 100%;
 }
 
 /* ============================================================

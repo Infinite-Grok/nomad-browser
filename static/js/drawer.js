@@ -175,7 +175,8 @@ const NodeDrawer = {
         try {
             const resp = await fetch('/api/favorites');
             if (!resp.ok) { this.favorites = []; return; }
-            this.favorites = await resp.json();
+            const data = await resp.json();
+            this.favorites = Array.isArray(data) ? data : (data.favorites || []);
         } catch (e) {
             this.favorites = [];
         }

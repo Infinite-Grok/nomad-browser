@@ -5,6 +5,11 @@ import RNS, LXMF
 from . import identity
 
 
+def _clean_addr(addr):
+    """Strip angle brackets and whitespace from LXMF addresses."""
+    return addr.replace("<", "").replace(">", "").replace(" ", "")
+
+
 class Messenger:
     def __init__(self, data_dir):
         self.data_dir = data_dir
@@ -23,7 +28,7 @@ class Messenger:
         self._incoming = []
         self._lock = threading.Lock()
         self.router.announce(self.delivery.hash)
-        self.lxmf_address = RNS.prettyhexrep(self.delivery.hash)
+        self.lxmf_address = RNS.prettyhexrep(self.delivery.hash).replace("<","").replace(">","")
 
     def send(self, to_address, content):
         """Send LXMF message. Returns message_id string."""
@@ -55,7 +60,7 @@ class Messenger:
         self.router.handle_outbound(msg)
         self._store_message(to_address, {
             "from": self.lxmf_address,
-            "to": to_address,
+            "to": _clean_addr(to_address),
             "content": content,
             "timestamp": datetime.utcnow().isoformat(),
             "status": "sent"
@@ -65,7 +70,7 @@ class Messenger:
     def _on_message(self, message):
         """Callback for incoming LXMF messages."""
         try:
-            sender = RNS.prettyhexrep(message.source_hash)
+            sender = RNS.prettyhexrep(message.source_hash).replace("<","").replace(">","")
             content = message.content.decode('utf-8') if isinstance(message.content, bytes) else str(message.content)
             msg_data = {
                 "from": sender,

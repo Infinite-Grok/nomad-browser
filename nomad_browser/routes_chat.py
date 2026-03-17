@@ -100,6 +100,19 @@ def register_chat_routes(app, messenger):
         except Exception as e:
             return jsonify({"status": "error", "error": str(e)}), 500
 
+    @chat_bp.route("/api/chat/clear/<path:address>", methods=["DELETE"])
+    def clear_conversation(address):
+        """Clear all messages for a conversation."""
+        try:
+            addr_clean = address.replace("<","").replace(">","").replace(" ","")
+            import os, shutil
+            conv_dir = os.path.join(messenger.conversations_dir, addr_clean)
+            if os.path.exists(conv_dir):
+                shutil.rmtree(conv_dir)
+            return jsonify({"status": "ok"})
+        except Exception as e:
+            return jsonify({"status": "error", "error": str(e)}), 500
+
     @chat_bp.route("/api/chat/identity", methods=["GET"])
     def get_identity():
         """Return this node's LXMF address.

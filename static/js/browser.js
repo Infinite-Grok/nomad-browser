@@ -36,6 +36,10 @@ const PageBrowser = {
             if (e.key === 'Enter') this.navigateFromAddressBar();
         });
 
+        // Clear static welcome message — tabs manage their own content
+        const pageContentEl = document.getElementById('page-content');
+        pageContentEl.innerHTML = '';
+
         // Start with one blank tab
         this.addTab();
 
