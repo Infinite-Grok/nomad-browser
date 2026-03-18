@@ -224,7 +224,11 @@ const PageBrowser = {
         // Detect web URLs
         if (this._isWebUrl(value)) {
             let url = value;
-            if (!url.match(/^https?:\/\//i)) url = 'https://' + url;
+            if (!url.match(/^https?:\/\//i)) {
+                // Use http for localhost/loopback, https for everything else
+                const isLocal = /^(localhost|127\.0\.0\.1)(:|\/|$)/i.test(url);
+                url = (isLocal ? 'http://' : 'https://') + url;
+            }
             this.navigateToUrl(url);
             return;
         }
@@ -252,7 +256,10 @@ const PageBrowser = {
         if (/^https?:\/\//i.test(value)) return true;
         if (/^[a-f0-9]{16,64}$/i.test(value)) return false;  // pure hex = mesh hash
         if (/^[a-f0-9]+:\//i.test(value)) return false;       // hash:/path = mesh
+        if (/^localhost(:\d+)?(\/|$)/i.test(value)) return true;  // localhost with optional port
+        if (/^127\.0\.0\.1(:\d+)?(\/|$)/.test(value)) return true;  // loopback IP
         if (/^[a-zA-Z0-9-]+\.[a-zA-Z]{2,}/.test(value)) return true;  // domain.tld
+        if (/^[a-zA-Z0-9-]+:\d+/.test(value) && !/^[a-f0-9]+:\//.test(value)) return true;  // host:port
         return false;
     },
 
