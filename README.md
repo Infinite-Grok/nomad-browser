@@ -128,30 +128,45 @@ The most valuable drops are placed where the mesh **doesn't reach yet**. Want th
 
 ## Install
 
+### Standalone App (recommended)
+
 ```bash
-# Clone
 git clone https://github.com/Infinite-Grok/nomad-browser.git
 cd nomad-browser
-
-# Install dependencies
 pip install -r requirements.txt
-
-# Run
 python run.py
 ```
 
-Open `http://127.0.0.1:5000` in your browser.
+This opens Nomad Browser as a **standalone desktop application** — its own window, not a browser tab. Uses the native OS webview (Edge WebView2 on Windows, WebKit on Mac/Linux).
+
+### Web Server Mode
+
+```bash
+python run.py --web
+```
+
+Runs as a traditional web server. Open `http://127.0.0.1:5000` in any browser.
+
+### Build a Distributable `.exe`
+
+```bash
+pip install pyinstaller
+python build.py
+```
+
+Output: `dist/NomadBrowser/NomadBrowser.exe` — a standalone executable. No Python required to run. Share the `dist/NomadBrowser/` folder.
 
 ### Requirements
 
 - Python 3.8+
 - [Reticulum](https://reticulum.network/) (`pip install rns`)
 - [LXMF](https://github.com/markqvist/LXMF) (`pip install lxmf`)
+- [PyWebView](https://pywebview.flowrl.com/) (`pip install pywebview`) — for standalone mode
 
 ### Quick Test (no Reticulum needed)
 
 ```bash
-python run.py --no-rns --port 5555
+python run.py --no-rns
 ```
 
 Starts in game-only mode — no mesh connection, but the game layer works. Good for exploring the UI.
