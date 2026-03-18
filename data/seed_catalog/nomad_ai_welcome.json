@@ -1,0 +1,9 @@
+{
+  "type": "loot_definition",
+  "item_id": "nomad_ai_welcome",
+  "name": "Nomad AI Welcome Token",
+  "description": "Awarded to visitors of the Nomad AI home node. A mark of curiosity.",
+  "rarity": "common",
+  "creator": "nomad_ai",
+  "tags": ["welcome", "nomad_ai"]
+}

@@ -1,4 +1,7 @@
 """GameEngine — orchestrates identity, inventory, library, scanner, claims."""
+import os
+import json
+
 from .identity import GameIdentity
 from .inventory import Inventory
 from .loot_library import LootLibrary
@@ -15,6 +18,32 @@ class GameEngine:
         self.library = LootLibrary(data_dir)
         self.scanner = LootScanner()
         self.claims = ClaimProcessor(data_dir, self.inventory, self.library)
+        self._load_seed_catalog()
+
+    def _load_seed_catalog(self):
+        """Load bundled seed loot definitions if catalog is empty."""
+        if self.library.list_items():
+            return
+        seed_dir = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "..", "..", "data", "seed_catalog"
+        )
+        seed_dir = os.path.normpath(seed_dir)
+        if not os.path.isdir(seed_dir):
+            return
+        for fname in os.listdir(seed_dir):
+            if not fname.endswith(".json"):
+                continue
+            with open(os.path.join(seed_dir, fname), "r") as f:
+                defn = json.load(f)
+            self.library.add_definition(
+                item_id=defn["item_id"],
+                name=defn["name"],
+                description=defn.get("description", ""),
+                rarity=defn.get("rarity", "common"),
+                creator=defn.get("creator", "unknown"),
+                tags=defn.get("tags", []),
+                physical_payload=defn.get("physical_payload"),
+            )
 
     def scan_page(self, content, node_hash, page_path):
         """Scan a page for loot. Returns list of drops found."""
