@@ -1,0 +1,9 @@
+{
+  "type": "loot_definition",
+  "item_id": "game_reader",
+  "name": "Game Initiate Badge",
+  "description": "Read the full game page. You know the rules now.",
+  "rarity": "uncommon",
+  "creator": "nomad_browser",
+  "tags": ["game", "knowledge"]
+}
