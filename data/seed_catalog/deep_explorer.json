@@ -1,0 +1,9 @@
+{
+  "type": "loot_definition",
+  "item_id": "deep_explorer",
+  "name": "Deep Explorer Badge",
+  "description": "Found the hidden page. You dig deeper than most.",
+  "rarity": "uncommon",
+  "creator": "nomad_ai",
+  "tags": ["exploration", "hidden"]
+}

@@ -87,6 +87,20 @@
     </div>
   </div>
 
+  <!-- Inventory Panel -->
+  <div id="inventory-panel" class="inventory-panel">
+      <div class="inv-header">
+          <h3>Inventory</h3>
+          <button class="inv-close" onclick="InventoryPanel.toggle()">×</button>
+      </div>
+      <div class="inv-player">
+          <div class="inv-player-name" id="player-name">Loading...</div>
+          <div class="inv-player-class"><span id="player-class">nomad</span></div>
+          <div class="inv-player-count"><span id="inventory-count">0</span> items</div>
+      </div>
+      <div class="inv-items-list" id="inventory-items"></div>
+  </div>
+
   <!-- Scripts (will be added in later tasks) -->
   <script src="/static/js/purify.min.js"></script>
   <script src="/static/js/micron.js"></script>
@@ -97,6 +111,9 @@
   <script src="/static/js/contacts.js"></script>
   <script src="/static/js/browser.js"></script>
   <script src="/static/js/drawer.js"></script>
+  <script src="/static/js/loot-overlay.js"></script>
+  <script src="/static/js/inventory-panel.js"></script>
+  <script src="/static/js/game-engine.js"></script>
   <script src="/static/js/app.js"></script>
 </body>
 </html>

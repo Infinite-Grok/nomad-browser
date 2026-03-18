@@ -32,8 +32,15 @@ class Messenger:
         self.lxmf_address = RNS.prettyhexrep(self.delivery.hash).replace("<","").replace(">","")
         self.local_peers = {}  # {address: "http://host:port"} for direct HTTP delivery
 
-    def send(self, to_address, content):
+    def send(self, to_address, content, game_context=None):
         """Send LXMF message. Uses direct HTTP for local peers, LXMF for mesh."""
+        if game_context:
+            ctx_str = (
+                f"[GAME CONTEXT: Player '{game_context.get('player_name', 'unknown')}' "
+                f"(class: {game_context.get('player_class', 'nomad')}). "
+                f"{game_context.get('hint', '')}]\n\n"
+            )
+            content = ctx_str + content
         clean_addr = _clean_addr(to_address)
 
         # Check local peers first (HTTP bridge for testing)

@@ -300,15 +300,42 @@ const PageBrowser = {
         const contentEl = tab.contentElement;
         contentEl.innerHTML = '';
 
-        const pageDiv = document.createElement('div');
-        pageDiv.className = 'mu-page';
-        pageDiv.style.padding = '12px 16px';
-        contentEl.appendChild(pageDiv);
+        // Detect HTML vs Micron content
+        const trimmed = data.content.trimStart();
+        const isHTML = trimmed.startsWith('<!') || trimmed.startsWith('<html') || trimmed.startsWith('<HTML')
+            || trimmed.startsWith('<body') || trimmed.startsWith('<div');
 
-        MicronParser.render(data.content, pageDiv, { nodeHash: hash });
+        let title;
+        if (isHTML) {
+            // Render HTML in a sandboxed iframe
+            const iframe = document.createElement('iframe');
+            iframe.className = 'html-page-frame';
+            iframe.sandbox = 'allow-scripts allow-same-origin';
+            iframe.style.cssText = 'width:100%; height:100%; border:none; background:#fff;';
+            contentEl.appendChild(iframe);
+            iframe.srcdoc = data.content;
+            // Try to extract title from HTML
+            const titleMatch = data.content.match(/<title[^>]*>([^<]+)<\/title>/i);
+            title = titleMatch ? titleMatch[1] : this._shortHash(hash);
+        } else {
+            // Micron markup (.mu)
+            const pageDiv = document.createElement('div');
+            pageDiv.className = 'mu-page';
+            pageDiv.style.padding = '12px 16px';
+            contentEl.appendChild(pageDiv);
+            MicronParser.render(data.content, pageDiv, { nodeHash: hash });
+            title = this._extractTitle(data.content) || this._shortHash(hash);
+        }
 
-        // Extract a title from the first heading line or fall back to hash
-        const title = this._extractTitle(data.content) || this._shortHash(hash);
+        // Scan for loot drops
+        if (typeof LootOverlay !== 'undefined' && LootOverlay.enabled) {
+            const drops = await LootOverlay.scanPage(data.content, hash, path);
+            if (drops.length > 0) {
+                LootOverlay.showDrops(drops, contentEl, hash, path);
+            }
+        }
+
+        // Extract a title
         tab.title = title;
         tab.element.querySelector('.browser-tab-label').textContent = title;
     },

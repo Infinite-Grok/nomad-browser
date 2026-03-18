@@ -242,12 +242,19 @@ const ChatPanel = {
 
         this._scrollToBottom();
 
+        // Inject game context for AI conversations
+        const isAI = this.activeAddress === this.aiAddress || this.activeAddress === window.NOMAD_AI_ADDRESS;
+        let gameContext = null;
+        if (isAI && typeof GameController !== 'undefined') {
+            gameContext = GameController.getAIGameContext();
+        }
+
         // Send via API
         try {
             await fetch('/api/chat/send', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ to: this.activeAddress, content })
+                body: JSON.stringify({ to: this.activeAddress, content, game_context: gameContext })
             });
             // Show waiting state
             this.showWaiting();
