@@ -30,10 +30,15 @@ def main():
         metavar="ADDRESS=URL",
         help="Register a local peer for direct HTTP delivery (e.g. abc123=http://localhost:5001). Repeatable.",
     )
+    parser.add_argument(
+        "--no-rns",
+        action="store_true",
+        help="Skip Reticulum/LXMF init (game-only mode for testing)",
+    )
 
     args = parser.parse_args()
 
-    app = create_app(data_dir=args.data_dir, local_peers=args.local_peer)
+    app = create_app(data_dir=args.data_dir, local_peers=args.local_peer, skip_rns=args.no_rns)
     start_server(app, host=args.host, port=args.port)
 
 
