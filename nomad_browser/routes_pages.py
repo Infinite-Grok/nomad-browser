@@ -6,7 +6,9 @@ Registers all /api/* endpoints against a Flask app instance.
 
 from __future__ import annotations
 
+import base64
 import json
+import mimetypes
 import os
 from pathlib import Path
 from typing import Any, Dict
@@ -30,18 +32,36 @@ def register_page_routes(app: "Flask", browser: "Browser") -> None:
 
     @app.route("/api/pages/fetch/<node_hash>")
     def api_fetch_page(node_hash):
-        """Fetch a .mu page from a NomadNet node.
+        """Fetch a page or file from a NomadNet node.
 
         Query params:
             path  -- page path, default /page/index.mu
+
+        Returns JSON with:
+            - content (str) for text pages (.mu, .html)
+            - content_base64 (str) + content_type (str) for binary files (.png, .jpg, etc.)
         """
         page_path = request.args.get("path", "/page/index.mu")
         print(f"[API] fetch {page_path} from {node_hash[:16]}...")
         response = browser.fetch_page(node_hash, page_path)
+
         if response["status"] == "success":
-            print(f"[API] fetch OK ({len(response.get('content', ''))} chars)")
+            content = response.get("content", "")
+
+            # Binary content: encode as base64 with content type
+            if isinstance(content, bytes):
+                content_type = mimetypes.guess_type(page_path)[0] or "application/octet-stream"
+                response["content"] = None
+                response["content_base64"] = base64.b64encode(content).decode("ascii")
+                response["content_type"] = content_type
+                response["content_length"] = len(content)
+                response["filename"] = page_path.rsplit("/", 1)[-1] if "/" in page_path else page_path
+                print(f"[API] fetch OK (binary: {len(content)} bytes, {content_type})")
+            else:
+                print(f"[API] fetch OK ({len(content)} chars)")
         else:
             print(f"[API] fetch FAIL: {response.get('error')}")
+
         return jsonify(response)
 
     # ------------------------------------------------------------------ #

@@ -142,7 +142,10 @@ class PageFetcher:
             try:
                 data = receipt.response
                 if isinstance(data, bytes):
-                    result["data"] = data.decode("utf-8")
+                    try:
+                        result["data"] = data.decode("utf-8")
+                    except UnicodeDecodeError:
+                        result["data"] = data  # Keep raw bytes for binary
                 elif data:
                     result["data"] = str(data)
                 else:
@@ -185,12 +188,19 @@ class PageFetcher:
         try:
             data = receipt.response
             if isinstance(data, bytes):
-                self._result_data = data.decode("utf-8")
+                # Try text first, keep raw bytes if it fails
+                try:
+                    self._result_data = data.decode("utf-8")
+                    print(f"[PageFetcher] Received {len(self._result_data)} chars (text)")
+                except UnicodeDecodeError:
+                    self._result_data = data  # Keep as raw bytes for binary
+                    print(f"[PageFetcher] Received {len(data)} bytes (binary)")
             elif data:
                 self._result_data = str(data)
+                print(f"[PageFetcher] Received {len(self._result_data)} chars")
             else:
                 self._result_data = ""
-            print(f"[PageFetcher] Received {len(self._result_data)} chars")
+                print("[PageFetcher] Received empty response")
         except Exception as exc:
             print(f"[PageFetcher] Response decode error: {exc}")
             self._result_data = ""

@@ -307,6 +307,72 @@ const PageBrowser = {
         tab.element.querySelector('.browser-tab-label').textContent = tab.title;
     },
 
+    _renderBinaryContent(tab, data) {
+        const contentEl = tab.contentElement;
+        contentEl.innerHTML = '';
+        const type = data.content_type || 'application/octet-stream';
+        const b64 = data.content_base64;
+        const filename = data.filename || 'download';
+        const size = data.content_length || 0;
+        const dataUrl = `data:${type};base64,${b64}`;
+
+        const wrapper = document.createElement('div');
+        wrapper.style.cssText = 'padding: 24px; display: flex; flex-direction: column; align-items: center; gap: 16px;';
+
+        if (type.startsWith('image/')) {
+            const img = document.createElement('img');
+            img.src = dataUrl;
+            img.style.cssText = 'max-width: 100%; max-height: 80vh; border-radius: 8px; border: 1px solid #30363d;';
+            img.alt = filename;
+            wrapper.appendChild(img);
+        } else if (type.startsWith('audio/')) {
+            const audio = document.createElement('audio');
+            audio.src = dataUrl;
+            audio.controls = true;
+            audio.style.cssText = 'width: 100%; max-width: 500px;';
+            wrapper.appendChild(audio);
+        } else if (type.startsWith('video/')) {
+            const video = document.createElement('video');
+            video.src = dataUrl;
+            video.controls = true;
+            video.style.cssText = 'max-width: 100%; max-height: 80vh; border-radius: 8px;';
+            wrapper.appendChild(video);
+        } else if (type === 'application/pdf') {
+            const embed = document.createElement('embed');
+            embed.src = dataUrl;
+            embed.type = 'application/pdf';
+            embed.style.cssText = 'width: 100%; height: 85vh;';
+            wrapper.appendChild(embed);
+        } else {
+            // Generic file — show icon
+            const icon = document.createElement('div');
+            icon.style.cssText = 'font-size: 48px; opacity: 0.5;';
+            icon.textContent = '📄';
+            wrapper.appendChild(icon);
+        }
+
+        // File info + download button
+        const info = document.createElement('div');
+        info.style.cssText = 'text-align: center; color: #8b949e; font-size: 12px;';
+        const sizeStr = size > 1024*1024 ? `${(size/1024/1024).toFixed(1)} MB`
+                      : size > 1024 ? `${(size/1024).toFixed(1)} KB`
+                      : `${size} bytes`;
+        info.innerHTML = `<strong style="color:#c9d1d9;">${this._escapeHtml(filename)}</strong><br>${type} · ${sizeStr}`;
+        wrapper.appendChild(info);
+
+        const dlBtn = document.createElement('a');
+        dlBtn.href = dataUrl;
+        dlBtn.download = filename;
+        dlBtn.style.cssText = 'background: #d4a04420; border: 1px solid #d4a04460; border-radius: 6px; color: #d4a044; padding: 8px 20px; text-decoration: none; font-size: 13px; font-weight: 600;';
+        dlBtn.textContent = 'Download';
+        wrapper.appendChild(dlBtn);
+
+        contentEl.appendChild(wrapper);
+
+        tab.title = filename;
+        tab.element.querySelector('.browser-tab-label').textContent = filename;
+    },
+
     goBack() {
         const tab = this.getActiveTab();
         if (!tab || tab.historyIndex <= 0) return;
@@ -376,6 +442,12 @@ const PageBrowser = {
 
         if (data.error || data.status === 'error') {
             this._showError(tab, data.error || 'Unknown error fetching page.');
+            return;
+        }
+
+        // Handle binary content (images, audio, files)
+        if (data.content_base64) {
+            this._renderBinaryContent(tab, data);
             return;
         }
 

@@ -423,15 +423,51 @@ const ChatPanel = {
         const parsed = this._parseAttachment(rawContent);
 
         if (parsed.attachment) {
-            const labelEl = document.createElement('div');
-            labelEl.className = 'attachment-label';
-            labelEl.textContent = parsed.attachment.name;
-            bubbleEl.appendChild(labelEl);
+            const att = parsed.attachment;
+            const lowerName = att.name.toLowerCase();
 
-            const blockEl = document.createElement('div');
-            blockEl.className = 'attachment-block';
-            blockEl.textContent = parsed.attachment.content;
-            bubbleEl.appendChild(blockEl);
+            if (lowerName.match(/\.(png|jpg|jpeg|gif|webp|bmp|svg)$/)) {
+                // Image attachment — render inline
+                const img = document.createElement('img');
+                img.style.cssText = 'max-width: 100%; max-height: 300px; border-radius: 6px; margin: 4px 0; cursor: pointer;';
+                // Try as base64 data URL, fall back to raw content
+                if (att.content.match(/^[A-Za-z0-9+/=\s]+$/)) {
+                    const ext = lowerName.match(/\.(\w+)$/)[1];
+                    const mime = {png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',gif:'image/gif',webp:'image/webp',bmp:'image/bmp',svg:'image/svg+xml'}[ext] || 'image/png';
+                    img.src = `data:${mime};base64,${att.content.replace(/\s/g, '')}`;
+                } else {
+                    img.alt = att.name;
+                }
+                img.title = att.name;
+                img.addEventListener('click', () => window.open(img.src, '_blank'));
+                bubbleEl.appendChild(img);
+            } else if (lowerName.match(/\.(mp3|wav|ogg|m4a|flac|aac|opus)$/)) {
+                // Audio attachment — render player
+                const audio = document.createElement('audio');
+                audio.controls = true;
+                audio.style.cssText = 'width: 100%; max-width: 300px; margin: 4px 0;';
+                if (att.content.match(/^[A-Za-z0-9+/=\s]+$/)) {
+                    const ext = lowerName.match(/\.(\w+)$/)[1];
+                    const mime = {mp3:'audio/mpeg',wav:'audio/wav',ogg:'audio/ogg',m4a:'audio/mp4',flac:'audio/flac',aac:'audio/aac',opus:'audio/opus'}[ext] || 'audio/mpeg';
+                    audio.src = `data:${mime};base64,${att.content.replace(/\s/g, '')}`;
+                }
+                const labelEl = document.createElement('div');
+                labelEl.className = 'attachment-label';
+                labelEl.textContent = att.name;
+                bubbleEl.appendChild(labelEl);
+                bubbleEl.appendChild(audio);
+            } else {
+                // Generic attachment — show as text block
+                const labelEl = document.createElement('div');
+                labelEl.className = 'attachment-label';
+                labelEl.textContent = att.name;
+                bubbleEl.appendChild(labelEl);
+
+                const blockEl = document.createElement('div');
+                blockEl.className = 'attachment-block';
+                blockEl.textContent = att.content;
+                bubbleEl.appendChild(blockEl);
+            }
         }
 
         if (parsed.text) {
