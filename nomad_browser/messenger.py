@@ -34,13 +34,14 @@ class Messenger:
 
     def send(self, to_address, content, game_context=None):
         """Send LXMF message. Uses direct HTTP for local peers, LXMF for mesh."""
+        display_content = content  # What the user sees in their own chat
         if game_context:
             ctx_str = (
                 f"[GAME CONTEXT: Player '{game_context.get('player_name', 'unknown')}' "
                 f"(class: {game_context.get('player_class', 'nomad')}). "
                 f"{game_context.get('hint', '')}]\n\n"
             )
-            content = ctx_str + content
+            content = ctx_str + content  # What gets sent over LXMF
         clean_addr = _clean_addr(to_address)
 
         # Check local peers first (HTTP bridge for testing)
@@ -76,7 +77,7 @@ class Messenger:
         self._store_message(to_address, {
             "from": self.lxmf_address,
             "to": _clean_addr(to_address),
-            "content": content,
+            "content": display_content,
             "timestamp": datetime.utcnow().isoformat(),
             "status": "sent"
         })

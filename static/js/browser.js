@@ -294,7 +294,8 @@ const PageBrowser = {
         iframe.className = 'web-page-frame';
         iframe.sandbox = 'allow-scripts allow-same-origin allow-forms allow-popups';
         iframe.style.cssText = 'width:100%; height:100%; border:none; background:#fff;';
-        iframe.src = url;
+        // Use proxy to bypass X-Frame-Options blocking
+        iframe.src = `/api/web/proxy?url=${encodeURIComponent(url)}`;
         contentEl.appendChild(iframe);
 
         // Extract title from URL for tab label

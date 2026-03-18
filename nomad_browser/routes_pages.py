@@ -12,9 +12,11 @@ import mimetypes
 import os
 from pathlib import Path
 from typing import Any, Dict
+from urllib.parse import urlparse
 
 import RNS
-from flask import jsonify, request
+import requests as http_requests
+from flask import jsonify, request, Response
 
 from typing import TYPE_CHECKING
 
@@ -177,6 +179,65 @@ def register_page_routes(app: "Flask", browser: "Browser") -> None:
             return jsonify({"status": "success", "message": "Favorites saved"})
         except Exception as exc:
             return jsonify({"status": "error", "error": str(exc)}), 500
+
+
+    # ------------------------------------------------------------------ #
+    # Web proxy (bypass X-Frame-Options for embedded browsing)            #
+    # ------------------------------------------------------------------ #
+
+    @app.route("/api/web/proxy")
+    def api_web_proxy():
+        """Proxy a web URL to bypass X-Frame-Options restrictions.
+
+        Query params:
+            url  -- full URL to fetch (required)
+
+        Returns the page content with X-Frame-Options stripped,
+        so it can be rendered in an iframe.
+        """
+        url = request.args.get("url", "").strip()
+        if not url:
+            return jsonify({"error": "Missing 'url' parameter"}), 400
+
+        # Basic URL validation
+        parsed = urlparse(url)
+        if parsed.scheme not in ("http", "https"):
+            return jsonify({"error": "Only http/https URLs allowed"}), 400
+
+        try:
+            resp = http_requests.get(url, timeout=15, headers={
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "Accept-Language": "en-US,en;q=0.5",
+            }, allow_redirects=True, verify=False)
+
+            # Build response, stripping frame-blocking headers
+            content_type = resp.headers.get("Content-Type", "text/html")
+            excluded_headers = {"x-frame-options", "content-security-policy",
+                                "content-encoding", "transfer-encoding", "connection"}
+            headers = {k: v for k, v in resp.headers.items()
+                       if k.lower() not in excluded_headers}
+
+            # Inject <base> tag so relative URLs resolve correctly
+            content = resp.content
+            if "text/html" in content_type:
+                base_tag = f'<base href="{resp.url}">'.encode()
+                # Insert after <head> if present
+                head_pos = content.lower().find(b'<head')
+                if head_pos >= 0:
+                    close = content.find(b'>', head_pos)
+                    if close >= 0:
+                        content = content[:close+1] + base_tag + content[close+1:]
+                else:
+                    content = base_tag + content
+
+            return Response(content, status=resp.status_code,
+                            headers=headers, content_type=content_type)
+
+        except http_requests.Timeout:
+            return jsonify({"error": "Request timed out"}), 504
+        except http_requests.RequestException as e:
+            return jsonify({"error": str(e)}), 502
 
 
 # --------------------------------------------------------------------------- #
