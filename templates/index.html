@@ -42,6 +42,7 @@
       <button id="nav-reload" class="nav-btn" title="Reload">&#8635;</button>
       <input type="text" id="address-bar" class="address-bar" placeholder="node_hash:/page/path.mu">
       <button id="btn-collapse-chat" class="nav-btn" title="Toggle Chat (Ctrl+Shift+C)">&#9776;</button>
+      <button id="btn-inventory" class="nav-btn inv-btn" title="Inventory (Ctrl+Shift+I)" onclick="InventoryPanel.toggle()">&#9733;</button>
       <button id="btn-drawer" class="nav-btn" title="Nodes (Ctrl+Shift+D)">Nodes</button>
     </div>
 
@@ -93,11 +94,8 @@
           <h3>Inventory</h3>
           <button class="inv-close" onclick="InventoryPanel.toggle()">×</button>
       </div>
-      <div class="inv-player">
-          <div class="inv-player-name" id="player-name">Loading...</div>
-          <div class="inv-player-class"><span id="player-class">nomad</span></div>
-          <div class="inv-player-count"><span id="inventory-count">0</span> items</div>
-      </div>
+      <div id="inv-player-section" class="inv-player-section"></div>
+      <div class="inv-player-count"><span id="inventory-count">0</span> items</div>
       <div class="inv-items-list" id="inventory-items"></div>
   </div>
 
