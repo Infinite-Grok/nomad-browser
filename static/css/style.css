@@ -929,3 +929,91 @@ body {
   max-width: 560px;
   font-size: 1em;
 }
+
+/* ============================================================
+   Loot Overlay
+   ============================================================ */
+
+.loot-banner {
+    background: linear-gradient(135deg, #1a1520 0%, #12121a 100%);
+    border: 1px solid #d4a04440;
+    border-left: 4px solid #d4a044;
+    border-radius: 0 8px 8px 0;
+    padding: 10px 16px;
+    margin: 8px 0 16px;
+    font-size: 13px;
+    color: #d4a044;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.loot-icon { font-size: 18px; }
+.loot-indicator {
+    background: #12121a;
+    border: 1px solid #2a2a3a;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 8px 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    transition: all 0.3s;
+}
+.loot-indicator.loot-claimed {
+    border-color: #4ade8060;
+    background: #4ade8010;
+}
+.loot-indicator.loot-already { opacity: 0.5; }
+.loot-glow {
+    color: #d4a044;
+    font-size: 20px;
+    animation: lootPulse 2s ease-in-out infinite;
+}
+@keyframes lootPulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+}
+.loot-name { color: #e0ddd8; font-weight: 600; }
+.loot-hint { color: #8a8898; font-style: italic; flex: 1; }
+.loot-claim-btn {
+    background: #d4a04420;
+    border: 1px solid #d4a04460;
+    border-radius: 6px;
+    color: #d4a044;
+    padding: 6px 14px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+.loot-claim-btn:hover:not(:disabled) { background: #d4a04440; }
+.loot-claim-btn:disabled { opacity: 0.6; cursor: default; }
+.loot-rarity {
+    background: #a78bfa20;
+    color: #a78bfa;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+}
+.loot-toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #12121a;
+    border: 1px solid #4ade8060;
+    border-radius: 10px;
+    padding: 14px 20px;
+    font-size: 13px;
+    color: #e0ddd8;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 10000;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.3s;
+    box-shadow: 0 4px 20px #00000060;
+}
+.loot-toast.visible { opacity: 1; transform: translateY(0); }
