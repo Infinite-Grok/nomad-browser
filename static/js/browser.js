@@ -93,7 +93,7 @@ const PageBrowser = {
         contentEl.innerHTML = `<div class="welcome-message">
             <h2>Nomad Browser</h2>
             <p>The first unified client for the Reticulum mesh network.</p>
-            <p style="color: #8b949e;">Enter a node hash in the address bar to begin.</p>
+            <p style="color: #8b949e;">Enter a node hash to browse the mesh, or a URL to browse the web.</p>
         </div>`;
         pageContentEl.appendChild(contentEl);
 
@@ -203,6 +203,9 @@ const PageBrowser = {
         // Default path
         if (!path) path = '/page/index.mu';
 
+        // Clear web URL state when navigating mesh
+        tab.url = null;
+
         // Push to history (truncate forward history if mid-stack)
         const newEntry = { hash, path };
         if (tab.historyIndex < tab.history.length - 1) {
@@ -218,11 +221,20 @@ const PageBrowser = {
         const value = document.getElementById('address-bar').value.trim();
         if (!value) return;
 
+        // Detect web URLs
+        if (this._isWebUrl(value)) {
+            let url = value;
+            if (!url.match(/^https?:\/\//i)) url = 'https://' + url;
+            this.navigateToUrl(url);
+            return;
+        }
+
+        // Mesh navigation: hash:/path or just hash
         let hash, path;
         const colonSlash = value.indexOf(':/');
         if (colonSlash > 0) {
             hash = value.substring(0, colonSlash);
-            path = value.substring(colonSlash + 1); // includes leading slash
+            path = value.substring(colonSlash + 1);
         } else {
             hash = value;
             path = '/page/index.mu';
@@ -231,12 +243,80 @@ const PageBrowser = {
         this.navigate(hash, path);
     },
 
+    /**
+     * Detect if input looks like a web URL rather than a mesh node hash.
+     * Web URLs: start with http(s)://, or contain dots with TLD patterns.
+     * Mesh hashes: 32-char hex strings, no dots.
+     */
+    _isWebUrl(value) {
+        if (/^https?:\/\//i.test(value)) return true;
+        if (/^[a-f0-9]{16,64}$/i.test(value)) return false;  // pure hex = mesh hash
+        if (/^[a-f0-9]+:\//i.test(value)) return false;       // hash:/path = mesh
+        if (/^[a-zA-Z0-9-]+\.[a-zA-Z]{2,}/.test(value)) return true;  // domain.tld
+        return false;
+    },
+
+    /**
+     * Navigate to a web URL — renders in sandboxed iframe.
+     */
+    async navigateToUrl(url) {
+        const tab = this.getActiveTab();
+        if (!tab) return;
+
+        // Store as a web URL entry in history
+        tab.hash = null;
+        tab.path = null;
+        tab.url = url;
+
+        // Push to history
+        const newEntry = { url };
+        if (tab.historyIndex < tab.history.length - 1) {
+            tab.history.splice(tab.historyIndex + 1);
+        }
+        tab.history.push(newEntry);
+        tab.historyIndex = tab.history.length - 1;
+
+        this._renderWebPage(tab, url);
+    },
+
+    _renderWebPage(tab, url) {
+        // Sync address bar
+        document.getElementById('address-bar').value = url;
+        this._updateNavButtons();
+
+        // Show loading
+        this._showLoading(tab);
+
+        const contentEl = tab.contentElement;
+        contentEl.innerHTML = '';
+
+        const iframe = document.createElement('iframe');
+        iframe.className = 'web-page-frame';
+        iframe.sandbox = 'allow-scripts allow-same-origin allow-forms allow-popups';
+        iframe.style.cssText = 'width:100%; height:100%; border:none; background:#fff;';
+        iframe.src = url;
+        contentEl.appendChild(iframe);
+
+        // Extract title from URL for tab label
+        try {
+            const hostname = new URL(url).hostname;
+            tab.title = hostname;
+        } catch {
+            tab.title = url.substring(0, 30);
+        }
+        tab.element.querySelector('.browser-tab-label').textContent = tab.title;
+    },
+
     goBack() {
         const tab = this.getActiveTab();
         if (!tab || tab.historyIndex <= 0) return;
         tab.historyIndex--;
         const entry = tab.history[tab.historyIndex];
-        this._navigateWithoutHistory(entry.hash, entry.path);
+        if (entry.url) {
+            this._renderWebPage(tab, entry.url);
+        } else {
+            this._navigateWithoutHistory(entry.hash, entry.path);
+        }
     },
 
     goForward() {
@@ -244,13 +324,21 @@ const PageBrowser = {
         if (!tab || tab.historyIndex >= tab.history.length - 1) return;
         tab.historyIndex++;
         const entry = tab.history[tab.historyIndex];
-        this._navigateWithoutHistory(entry.hash, entry.path);
+        if (entry.url) {
+            this._renderWebPage(tab, entry.url);
+        } else {
+            this._navigateWithoutHistory(entry.hash, entry.path);
+        }
     },
 
     reload() {
         const tab = this.getActiveTab();
-        if (!tab || !tab.hash) return;
-        this._navigateWithoutHistory(tab.hash, tab.path || '/page/index.mu');
+        if (!tab) return;
+        if (tab.url) {
+            this._renderWebPage(tab, tab.url);
+        } else if (tab.hash) {
+            this._navigateWithoutHistory(tab.hash, tab.path || '/page/index.mu');
+        }
     },
 
     // -------------------------------------------------------------------------
@@ -365,7 +453,9 @@ const PageBrowser = {
 
     _syncAddressBar(tab) {
         const addressBar = document.getElementById('address-bar');
-        if (tab.hash && tab.path) {
+        if (tab.url) {
+            addressBar.value = tab.url;
+        } else if (tab.hash && tab.path) {
             addressBar.value = `${tab.hash}:${tab.path}`;
         } else if (tab.hash) {
             addressBar.value = tab.hash;
