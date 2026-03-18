@@ -7,12 +7,16 @@
 const NomadBrowser = {
     chatCollapsed: false,
 
-    init() {
+    async init() {
         // 1. Initialize all modules
         ChatPanel.init();
         PageBrowser.init();
         NodeDrawer.init();
         ContactsDrawer.init();
+
+        // 1b. Initialize game modules
+        if (typeof GameController !== 'undefined') await GameController.init();
+        if (typeof InventoryPanel !== 'undefined') InventoryPanel.init();
 
         // 2. Set up global navigation handler (called by Micron links)
         window.nomadBrowser = {
@@ -108,6 +112,11 @@ const NomadBrowser = {
                 e.preventDefault();
                 ContactsDrawer.toggle();
             }
+            // Ctrl+Shift+I — toggle inventory panel
+            if (e.ctrlKey && e.shiftKey && e.key === 'I') {
+                e.preventDefault();
+                if (typeof InventoryPanel !== 'undefined') InventoryPanel.toggle();
+            }
             // Ctrl+T — new page tab
             if (e.ctrlKey && !e.shiftKey && e.key === 't') {
                 e.preventDefault();
@@ -133,5 +142,5 @@ const NomadBrowser = {
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-    NomadBrowser.init();
+    NomadBrowser.init().catch(err => console.error('[NomadBrowser] init error:', err));
 });
