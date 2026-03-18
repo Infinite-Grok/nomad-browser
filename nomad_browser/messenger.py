@@ -1,6 +1,7 @@
 """LXMF messenger — send/receive messages, store conversations locally."""
 import os, json, time, threading
 from datetime import datetime
+import requests as _requests
 import RNS, LXMF
 from . import identity
 
@@ -29,10 +30,17 @@ class Messenger:
         self._lock = threading.Lock()
         self.router.announce(self.delivery.hash)
         self.lxmf_address = RNS.prettyhexrep(self.delivery.hash).replace("<","").replace(">","")
+        self.local_peers = {}  # {address: "http://host:port"} for direct HTTP delivery
 
     def send(self, to_address, content):
-        """Send LXMF message. Returns message_id string."""
-        dest_hash = bytes.fromhex(to_address.replace("<", "").replace(">", "").replace(" ", ""))
+        """Send LXMF message. Uses direct HTTP for local peers, LXMF for mesh."""
+        clean_addr = _clean_addr(to_address)
+
+        # Check local peers first (HTTP bridge for testing)
+        if clean_addr in self.local_peers:
+            return self._send_local(clean_addr, content)
+
+        dest_hash = bytes.fromhex(clean_addr)
         if not RNS.Transport.has_path(dest_hash):
             RNS.Transport.request_path(dest_hash)
             start = time.time()
@@ -66,6 +74,24 @@ class Messenger:
             "status": "sent"
         })
         return RNS.prettyhexrep(msg.hash) if hasattr(msg, 'hash') and msg.hash else "sent"
+
+    def _send_local(self, to_address, content):
+        """Send via HTTP to a local peer's inject endpoint."""
+        peer_url = self.local_peers[to_address]
+        resp = _requests.post(
+            f"{peer_url}/api/chat/inject",
+            json={"from": self.lxmf_address, "content": content},
+            timeout=5
+        )
+        resp.raise_for_status()
+        self._store_message(to_address, {
+            "from": self.lxmf_address,
+            "to": to_address,
+            "content": content,
+            "timestamp": datetime.utcnow().isoformat(),
+            "status": "sent"
+        })
+        return "local-" + to_address[:8]
 
     def _on_message(self, message):
         """Callback for incoming LXMF messages."""

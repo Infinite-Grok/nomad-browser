@@ -7,10 +7,16 @@ Uses the shared identity from identity.py rather than managing its own RNS insta
 
 from __future__ import annotations
 
-import threading
-import time
+import sys, io, threading, time
 from datetime import datetime
 from typing import Any, Dict, Optional
+
+# Fix Windows cp1252 encoding crashes from mesh node names with emoji/unicode
+if sys.platform == "win32" and not isinstance(sys.stdout, io.TextIOWrapper):
+    pass  # already wrapped
+elif sys.platform == "win32":
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
 
 import RNS
 import RNS.vendor.umsgpack as msgpack
@@ -321,7 +327,11 @@ class Browser:
         if self.connection_state == "connected":
             self.connection_state = "active"
 
-        print(f"[Browser] Announce #{self.announce_count}: {clean[:16]}... -> {node_name}")
+        try:
+            print(f"[Browser] Announce #{self.announce_count}: {clean[:16]}... -> {node_name}")
+        except UnicodeEncodeError:
+            safe_name = node_name.encode('ascii', 'replace').decode('ascii')
+            print(f"[Browser] Announce #{self.announce_count}: {clean[:16]}... -> {safe_name}")
 
         # Kick off caching if a CacheManager is attached
         if self.cache is not None:

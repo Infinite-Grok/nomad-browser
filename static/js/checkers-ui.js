@@ -41,7 +41,8 @@ class CheckersUI {
         display: grid;
         grid-template-columns: repeat(8, 1fr);
         gap: 1px;
-        max-width: 480px;
+        width: 100%;
+        max-width: 560px;
         aspect-ratio: 1;
         margin: 12px auto;
         border: 2px solid #555;
@@ -112,7 +113,8 @@ class CheckersUI {
       .checkers-captures {
         display: flex;
         justify-content: space-between;
-        max-width: 480px;
+        width: 100%;
+        max-width: 560px;
         margin: 4px auto;
         padding: 0 4px;
         font-size: 0.85em;
@@ -290,8 +292,12 @@ class CheckersUI {
 
 // Global click handler (wired up by render's onclick attributes)
 function checkersClick(sq) {
-  if (window._checkersUI) {
-    window._checkersUI.handleClick(sq);
+  // Find the active game's UI from CheckersGame
+  if (typeof CheckersGame !== 'undefined' && CheckersGame.activeAddress) {
+    const game = CheckersGame.games[CheckersGame.activeAddress];
+    if (game && game.ui) {
+      game.ui.handleClick(sq);
+    }
   }
 }
 

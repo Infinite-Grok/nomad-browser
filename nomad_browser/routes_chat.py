@@ -203,4 +203,78 @@ def register_chat_routes(app, messenger):
         except Exception as e:
             return jsonify({"status": "error", "error": str(e)}), 500
 
+    # ----------------------------------------------------------------
+    # Reset (clear all game/chat state for testing)
+    # ----------------------------------------------------------------
+
+    _debug_log = []
+
+    @chat_bp.route("/api/debug/log", methods=["POST"])
+    def debug_log():
+        """Receive JS debug logs from the browser."""
+        data = request.get_json(force=True, silent=True) or {}
+        msg = data.get("msg", "")
+        _debug_log.append(msg)
+        if len(_debug_log) > 200:
+            _debug_log.pop(0)
+        return jsonify({"status": "ok"})
+
+    @chat_bp.route("/api/debug/log", methods=["GET"])
+    def get_debug_log():
+        """Return collected debug logs."""
+        return jsonify(_debug_log)
+
+    @chat_bp.route("/api/reset", methods=["GET"])
+    def reset_all():
+        """Clear all conversations and return a page that clears localStorage."""
+        import shutil
+        if os.path.exists(messenger.conversations_dir):
+            shutil.rmtree(messenger.conversations_dir)
+            os.makedirs(messenger.conversations_dir, exist_ok=True)
+        with messenger._lock:
+            messenger._incoming.clear()
+        return """<html><body style="background:#1a1a2e;color:#4caf50;font-family:monospace;
+            display:flex;align-items:center;justify-content:center;height:100vh;font-size:24px;">
+            <div id="msg">Clearing...</div>
+            <script>
+                localStorage.clear();
+                document.getElementById('msg').textContent = 'All cleared! Redirecting...';
+                setTimeout(() => window.location.href = '/', 1000);
+            </script></body></html>"""
+
+    # ----------------------------------------------------------------
+    # Local test injection (bypasses LXMF for local peer testing)
+    # ----------------------------------------------------------------
+
+    @chat_bp.route("/api/chat/inject", methods=["POST"])
+    def inject_message():
+        """Inject a message as if it arrived via LXMF.
+
+        Used by local peers to deliver messages directly over HTTP
+        instead of going through the mesh. Same format as _on_message.
+
+        Body: {"from": "<address>", "content": "message text"}
+        Returns: {"status": "ok"}
+        """
+        data = request.get_json(force=True, silent=True) or {}
+        from_addr = data.get("from", "").strip()
+        content = data.get("content", "").strip()
+
+        if not from_addr or not content:
+            return jsonify({"status": "error", "error": "Missing from/content"}), 400
+
+        from datetime import datetime
+        msg_data = {
+            "from": from_addr,
+            "to": messenger.lxmf_address,
+            "content": content,
+            "timestamp": datetime.utcnow().isoformat(),
+            "status": "received"
+        }
+        messenger._store_message(from_addr, msg_data)
+        with messenger._lock:
+            messenger._incoming.append({"address": from_addr, **msg_data})
+
+        return jsonify({"status": "ok"})
+
     app.register_blueprint(chat_bp)

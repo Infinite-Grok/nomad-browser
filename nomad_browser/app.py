@@ -6,12 +6,13 @@ from flask import Flask, render_template
 from . import identity as id_manager
 
 
-def create_app(data_dir=None):
+def create_app(data_dir=None, local_peers=None):
     """Create and configure the Flask application.
 
     Args:
         data_dir: Path to data directory for RNS identity storage.
                   Defaults to ~/.nomad-browser
+        local_peers: List of "address:url" strings for direct HTTP delivery.
 
     Returns:
         Configured Flask app instance.
@@ -37,6 +38,15 @@ def create_app(data_dir=None):
     from .messenger import Messenger
     from .routes_chat import register_chat_routes
     messenger = Messenger(data_dir)
+
+    # Register local peers for HTTP-bridged delivery (testing)
+    if local_peers:
+        for peer_spec in local_peers:
+            # Format: "hexaddress=http://host:port"
+            addr, url = peer_spec.split("=", 1)
+            messenger.local_peers[addr] = url
+            print(f"[NomadBrowser] Local peer: {addr[:16]}... -> {url}")
+
     register_chat_routes(app, messenger)
 
     # Initialize page browser + cache

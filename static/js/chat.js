@@ -165,14 +165,11 @@ const ChatPanel = {
 
         // Check if this is a game conversation
         if (conv.isGame && typeof CheckersGame !== 'undefined') {
-            // Render game board instead of messages
+            CheckersGame.activeAddress = address;
+            // Show game board in the right panel
+            CheckersGame._showInRightPanel(address);
             const game = CheckersGame.games[address];
-            if (game) {
-                const container = document.getElementById('chat-messages');
-                container.innerHTML = '';
-                container.appendChild(game.statusEl);
-                container.appendChild(game.boardEl);
-            }
+            if (game) game.ui.render();
             return;
         }
 
@@ -275,9 +272,11 @@ const ChatPanel = {
 
                 // Check if this is a game message
                 if (msg.content && msg.content.startsWith('{"type":"game"')) {
+                    if (typeof _glog !== 'undefined') _glog('[Chat] Game msg: ' + msg.content.substring(0, 80));
                     // Route to CheckersGame handler
                     if (typeof CheckersGame !== 'undefined') {
                         const handled = CheckersGame.handleGameMessage(msg);
+                        if (typeof _glog !== 'undefined') _glog('[Chat] handled=' + handled + ' games=' + Object.keys(CheckersGame.games).join(','));
                         if (handled) continue;
                     }
                 }
