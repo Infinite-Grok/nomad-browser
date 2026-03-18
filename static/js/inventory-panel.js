@@ -7,9 +7,11 @@ const InventoryPanel = {
         this.panel = document.getElementById('inventory-panel');
         this.itemsList = document.getElementById('inventory-items');
         this.countEl = document.getElementById('inventory-count');
-        this.classEl = document.getElementById('player-class');
-        this.nameEl = document.getElementById('player-name');
         if (this.panel) this.refresh();
+        // Apply saved game toggle state
+        if (!this._isGameEnabled()) {
+            this._setGameEnabled(false);
+        }
     },
 
     toggle() {
@@ -56,11 +58,19 @@ const InventoryPanel = {
                 <button id="inv-save-btn" class="inv-save-btn">Save</button>
             </div>
             <div class="inv-player-addr">${addr.slice(0, 16)}...</div>
+            <label class="inv-toggle-row">
+                <span class="inv-toggle-label">Game layer</span>
+                <input type="checkbox" id="inv-game-toggle" ${this._isGameEnabled() ? 'checked' : ''}>
+                <span class="inv-toggle-switch"></span>
+            </label>
         `;
 
         document.getElementById('inv-save-btn').addEventListener('click', () => this._saveIdentity());
         document.getElementById('inv-name-input').addEventListener('keydown', (e) => {
             if (e.key === 'Enter') this._saveIdentity();
+        });
+        document.getElementById('inv-game-toggle').addEventListener('change', (e) => {
+            this._setGameEnabled(e.target.checked);
         });
     },
 
@@ -118,5 +128,25 @@ const InventoryPanel = {
 
     _escapeAttr(str) {
         return String(str).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+    },
+
+    _isGameEnabled() {
+        const stored = localStorage.getItem('nomad-game-enabled');
+        return stored === null ? true : stored === 'true';
+    },
+
+    _setGameEnabled(enabled) {
+        localStorage.setItem('nomad-game-enabled', String(enabled));
+        // Toggle loot overlay
+        if (typeof LootOverlay !== 'undefined') LootOverlay.enabled = enabled;
+        // Toggle game controller
+        if (typeof GameController !== 'undefined') GameController.enabled = enabled;
+        // Toggle inventory button visibility
+        const invBtn = document.getElementById('btn-inventory');
+        if (invBtn) invBtn.style.display = enabled ? '' : 'none';
+        // Remove loot indicators from current page if disabled
+        if (!enabled) {
+            document.querySelectorAll('.loot-banner, .loot-indicator').forEach(el => el.remove());
+        }
     },
 };
