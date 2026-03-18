@@ -81,6 +81,11 @@ def create_app(data_dir=None, local_peers=None, skip_rns=False):
     app.config["game_engine"] = game_engine
     app.register_blueprint(game_bp)
 
+    # Initialize chat room
+    from .routes_chatroom import chatroom_bp, init_chatroom
+    init_chatroom(data_dir)
+    app.register_blueprint(chatroom_bp)
+
     return app
 
 

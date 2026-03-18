@@ -1,0 +1,9 @@
+{
+  "type": "loot_definition",
+  "item_id": "lodge_member",
+  "name": "Lodge Member Token",
+  "description": "Found the Loot Hunters' Lodge. You know where the gossip flows.",
+  "rarity": "uncommon",
+  "creator": "nomad_browser",
+  "tags": ["social", "lodge"]
+}
