@@ -45,6 +45,7 @@ def register_chat_routes(app, messenger):
         data = request.get_json(force=True, silent=True) or {}
         to_address = data.get("to", "").strip()
         content = data.get("content", "").strip()
+        game_context = data.get("game_context")
 
         if not to_address:
             return jsonify({"status": "error", "error": "Missing 'to' field"}), 400
@@ -52,7 +53,7 @@ def register_chat_routes(app, messenger):
             return jsonify({"status": "error", "error": "Missing 'content' field"}), 400
 
         try:
-            message_id = messenger.send(to_address, content)
+            message_id = messenger.send(to_address, content, game_context=game_context)
             return jsonify({"status": "ok", "message_id": message_id})
         except TimeoutError as e:
             return jsonify({"status": "error", "error": str(e)}), 504
