@@ -64,11 +64,20 @@ The Reticulum ecosystem has three separate tools that don't talk to each other:
 
 ## Features
 
-### Dual Page Rendering
-The browser renders both **Micron (.mu) pages** — the native markup used across NomadNet — and **full HTML pages** in sandboxed iframes. If a node serves HTML, it just works. No configuration needed.
+### Dual Browser — Mesh + Web
+One address bar, two networks. Type a node hash to browse Reticulum. Type a URL to browse the web. The browser auto-detects which you meant.
+
+- **Micron (.mu) pages** — native NomadNet markup, rendered client-side
+- **HTML pages** — from mesh nodes or the web, rendered in sandboxed iframes
+- **Binary files** — images, audio, video, PDFs from mesh nodes render inline with download buttons
+- Back/forward/reload works across mesh pages, web pages, and files in the same tab history
 
 ### LXMF Messaging
-Tabbed conversations with anyone on the mesh. Message delivery states (sent, delivered, waiting) are visible. All history is stored locally — nothing is transmitted beyond the mesh. File attachments supported.
+Tabbed conversations with anyone on the mesh. Message delivery states (sent, delivered, waiting) are visible. All history is stored locally — nothing is transmitted beyond the mesh.
+
+- **File attachments** — send and receive files
+- **Image attachments** — render inline as clickable thumbnails (Sideband compatible)
+- **Audio attachments** — render as inline players (Sideband compatible)
 
 ### Nomad AI Integration
 The AI archivist is a built-in chat tab. It draws from a knowledge base of 1,400+ verified entries crawled from nodes across the mesh. Ask it to find nodes, explain configs, or point you to content. When the game layer is active, the AI acts as your ally — hinting about interesting pages to visit.
@@ -166,14 +175,13 @@ Starts in game-only mode — no mesh connection, but the game layer works. Good 
 
 ### Address Bar
 
-Enter a node hash to browse its index page:
-```
-ff6878439a8502913b9a5f2abc0f452b
-```
+The address bar auto-detects what you type:
 
-Or a full path:
 ```
-ff6878439a8502913b9a5f2abc0f452b:/page/guide.mu
+ff6878439a8502913b9a5f2abc0f452b              ← mesh node (index page)
+ff6878439a8502913b9a5f2abc0f452b:/page/guide.mu  ← mesh node (specific page)
+google.com                                     ← web URL (auto-adds https://)
+https://reticulum.network                      ← web URL (direct)
 ```
 
 ### Game Commands
@@ -226,6 +234,9 @@ nomad-browser/
 |---------|----------|----------|----------|--------------------|
 | Browse .mu pages | Yes | No | Yes | **Yes** |
 | Render HTML pages | No | No | No | **Yes (sandboxed iframe)** |
+| Browse the web | No | No | No | **Yes (same address bar)** |
+| View images/audio from nodes | No | No | No | **Yes (inline rendering)** |
+| Image/audio in chat | No | Yes | No | **Yes (Sideband compatible)** |
 | LXMF messaging | Separate | Yes | No | **Yes (integrated)** |
 | Browse + chat at once | No | No | No | **Yes** |
 | AI navigation | No | No | No | **Yes** |
