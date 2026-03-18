@@ -452,7 +452,26 @@ body {
 
 .tab-page-content {
   overflow-y: auto;
+  overflow-x: hidden;
   height: 100%;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Word wrap for all rendered page content */
+.mu-page {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+}
+
+.mu-page div,
+.mu-page span,
+.mu-page pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
 }
 
 /* ============================================================
