@@ -56,9 +56,31 @@ The Reticulum ecosystem has three separate tools that don't talk to each other:
 
 **Left panel:** Tabbed LXMF conversations — AI, friends, anyone on the mesh.
 
-**Right panel:** Page browser with Micron rendering, tabs, navigation, node drawer.
+**Right panel:** Page browser with tabs, navigation, node drawer.
 
 **The connection:** Ask the AI about the page you're reading. Click a link the AI recommends. The conversation navigates the browser. The browser informs the conversation.
+
+---
+
+## Features
+
+### Dual Page Rendering
+The browser renders both **Micron (.mu) pages** — the native markup used across NomadNet — and **full HTML pages** in sandboxed iframes. If a node serves HTML, it just works. No configuration needed.
+
+### LXMF Messaging
+Tabbed conversations with anyone on the mesh. Message delivery states (sent, delivered, waiting) are visible. All history is stored locally — nothing is transmitted beyond the mesh. File attachments supported.
+
+### Nomad AI Integration
+The AI archivist is a built-in chat tab. It draws from a knowledge base of 1,400+ verified entries crawled from nodes across the mesh. Ask it to find nodes, explain configs, or point you to content. When the game layer is active, the AI acts as your ally — hinting about interesting pages to visit.
+
+### Built-In Checkers
+Challenge any contact to a game of checkers over LXMF. Invites arrive as toast notifications. The board renders full-size in the right panel. Game state persists across sessions.
+
+### Node Discovery
+Browse discovered nodes in the drawer panel. Star favorites. Search and filter. Or just ask the AI — it knows the network.
+
+### Contacts & Favorites
+Save LXMF addresses for quick access. Bookmark nodes you visit often. Everything stored locally.
 
 ---
 
@@ -198,6 +220,22 @@ nomad-browser/
 
 **Storage:** Everything local. Conversations on your disk. Inventory on your disk. Nothing leaves your machine unless you send it.
 
+### What Makes This Different
+
+| Feature | NomadNet | Sideband | rBrowser | **Nomad Browser** |
+|---------|----------|----------|----------|--------------------|
+| Browse .mu pages | Yes | No | Yes | **Yes** |
+| Render HTML pages | No | No | No | **Yes (sandboxed iframe)** |
+| LXMF messaging | Separate | Yes | No | **Yes (integrated)** |
+| Browse + chat at once | No | No | No | **Yes** |
+| AI navigation | No | No | No | **Yes** |
+| Multiple chat tabs | Separate | Yes | No | **Yes** |
+| Page context in chat | No | No | No | **Yes** |
+| Built-in games | No | No | No | **Yes (checkers)** |
+| Loot drops | No | No | No | **Yes** |
+| Contacts + favorites | Separate | Yes | No | **Yes** |
+| Web UI | No | No | Yes | **Yes** |
+
 ---
 
 ## For Node Operators
@@ -238,6 +276,16 @@ python -m pytest tests/ -v
 ```
 
 41 tests covering identity, inventory, loot library, scanner, claims, API endpoints, and full E2E game loop.
+
+---
+
+## Documentation
+
+- **[Installation Guide](docs/INSTALL.md)** — Setup, prerequisites, troubleshooting
+- **[User Guide](docs/USER-GUIDE.md)** — How to browse, chat, find loot
+- **[Node Operator Guide](docs/NODE-OPERATOR.md)** — How to hide loot on your node
+- **[API Reference](docs/API.md)** — All endpoints with curl examples
+- **[Architecture](docs/ARCHITECTURE.md)** — How it's built
 
 ---
 
