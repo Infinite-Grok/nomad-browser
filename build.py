@@ -28,6 +28,10 @@ def build():
         "--hidden-import", "nomad_browser.routes_chatroom",
         "--hidden-import", "waitress",
         "--hidden-import", "webview",
+        "--hidden-import", "requests",
+        # Collect ALL of RNS and LXMF (they use dynamic imports PyInstaller can't trace)
+        "--collect-all", "RNS",
+        "--collect-all", "LXMF",
         "--noconfirm",
         "run.py",
     ]
